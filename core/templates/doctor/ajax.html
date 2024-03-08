@@ -1,0 +1,92 @@
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Recommend Drug
+        $('#tbody').on("click", ".btn_recommend", function () {
+            console.log('Button Recommend Drug Clicked');
+            let disease = $(this).attr("data-sid");
+            var userid = $('#tbody #user_id').val();
+
+            console.log('Prediction ID is', disease);
+            console.log('User ID is', userid);
+
+            // Retrieve CSRF token from the cookie using a custom function
+            var csrf_token = getCookie('csrftoken');
+
+            mydata = { disease: disease, userid: userid, csrfmiddlewaretoken: csrf_token };
+            $.ajax({
+                url: "{% url 'mend' %}",
+                method: "POST",
+                data: mydata,
+                success: function (data) {
+                    console.log('Data Sent To The Backend');
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+
+        // Arrange Appointment
+        $('#mytable').on("click", ".btn_plan", function () {
+            console.log('Button Appointment Clicked');
+            let disease = $(this).attr("data-sid");
+
+            $('#prediction_id').val(disease);
+
+            console.log('Prediction ID is', disease);
+        });
+
+        // Recommend Drug
+        $('#myform').on("click", ".modal_ment", function () {
+            console.log('Button Modal Clicked');
+            var pk = $('#prediction_id').val();
+            console.log('Prediction ID is', pk);
+
+            var day = $('#myform #day').val();
+            var time = $('#myform #time').val();
+            console.log('Day is ', day);
+            console.log('Time is ', time);
+
+            // Retrieve CSRF token from the cookie using a custom function
+            var csrf_token = getCookie('csrftoken');
+
+            mydata = { pk: pk, day: day, time: time, csrfmiddlewaretoken: csrf_token };
+            $.ajax({
+                url: "{% url 'savement' %}",
+                method: "POST",
+                data: mydata,
+                success: function (data) {
+                    console.log('Data Sent To The Backend');
+
+                    // Assuming the backend returns the recommended drug name in the 'drug_name' field of the 'data' object
+                    var drugName = data.drug_name;
+
+                    // Update the HTML element with the recommended drug name
+                    $('#drug_name_placeholder').text(drugName);
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+    });
+</script>
